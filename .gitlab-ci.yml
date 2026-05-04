@@ -1,4 +1,19 @@
 stages:
     - package
-    - puplish
+    - sast
+    - sca-package
+    - publish
+    - sca-container
     - deploy
+    - fuzzing
+    - dast
+
+package:
+  stage: package
+  image: node:20
+  script:
+    - npm install
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour

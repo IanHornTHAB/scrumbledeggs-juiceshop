@@ -53,7 +53,7 @@ zap-dast:
       alias: juice-shop
   script:
     - mkdir -p reports
-    - zap-baseline.py -t http://juice-shop:3000 -r reports/zap-report.html || true
+    - "zap-baseline.py -t http://juice-shop:3000 -r reports/zap-report.html" || true
   artifacts:
     when: always
     paths:

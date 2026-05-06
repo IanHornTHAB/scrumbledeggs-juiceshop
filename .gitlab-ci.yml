@@ -45,8 +45,8 @@ npm-audit:
 include:
     - template: Security/SAST.gitlab-ci.yml
 
-zap-dast:
-  stage: dast
+zap-scan:
+  stage: fuzzing
   image: ghcr.io/zaproxy/zaproxy:stable
   services:
     - name: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA

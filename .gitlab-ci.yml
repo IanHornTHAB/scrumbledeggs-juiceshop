@@ -40,3 +40,6 @@ npm-audit:
     - cd app
     - npm install
     - npm audit
+
+include:
+    template: Jobs/SAST.gitlab-ci.yml

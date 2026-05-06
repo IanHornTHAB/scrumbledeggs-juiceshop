@@ -1,32 +1,7 @@
-stages:
-  - package
-  - sast
-  - sca-package
-  - publish
-  - sca-container
-  - deploy
-  - fuzzing
-  - dast
+include:
+  - template: Auto-DevOps.gitlab-ci.yml
 
-package:
-  stage: package
-  image: node:24
-  script:
-    - npm install
-    - npm run build:frontend
-    - npm run build:server
-  artifacts:
-    paths:
-      - build/
-      - frontend/dist/
-    expire_in: 1 hour
-
-publish-container:
-  stage: publish
-  image: docker:24
-  services:
-    - docker:24-dind
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+variables:
+  SAST_EXCLUDED_PATHS: "frontend/src/assets/private/**"
+  TEST_DISABLED: "true"
+  DAST_DISABLED: "true"

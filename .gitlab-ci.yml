@@ -1,5 +1,6 @@
 stages:
   - package
+  - test
   - sast
   - sca-package
   - publish

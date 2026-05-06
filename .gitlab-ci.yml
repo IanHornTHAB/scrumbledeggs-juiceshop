@@ -10,7 +10,7 @@ stages:
 
 package:
   stage: package
-  image: node:20
+  image: node:24
   script:
     - npm install
     - npm run build:frontend

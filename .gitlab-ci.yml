@@ -1,19 +1,22 @@
 stages:
-    - package
-    - sast
-    - sca-package
-    - publish
-    - sca-container
-    - deploy
-    - fuzzing
-    - dast
+  - package
+  - sast
+  - sca-package
+  - publish
+  - sca-container
+  - deploy
+  - fuzzing
+  - dast
 
 package:
   stage: package
   image: node:20
   script:
     - npm install
+    - npm run build:frontend
+    - npm run build:server
   artifacts:
     paths:
-      - node_modules/
+      - build/
+      - frontend/dist/
     expire_in: 1 hour

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const REPORTS_DIR = 'app/artifacts/reports';
+const REPORTS_DIR = process.env.REPORTS_DIR || 'reports';
 const FILENAME = process.env.OUTPUT_FILENAME || 'scan-results-local.json';
 const OUTPUT_FILE = path.join(REPORTS_DIR, FILENAME);
 const PIPELINE_ID = process.env.CI_PIPELINE_ID || 'local-run';

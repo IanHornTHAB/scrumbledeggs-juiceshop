@@ -40,7 +40,6 @@ npm-audit:
     - npm install
     - npm audit || true
 
-
 deploy:
   stage: deploy
   image: alpine:latest

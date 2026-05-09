@@ -6,9 +6,8 @@ stages:
   - publish
   - sca-container
   - deploy
-  - fuzzing
   - dast
-  - report 
+  - report
 
 package:
   stage: package
@@ -44,19 +43,7 @@ npm-audit:
     - npm audit || true
 
 include:
-    - template: Security/SAST.gitlab-ci.yml
-
-zap-scan:
-  stage: dast
-  image: ghcr.io/zaproxy/zaproxy:stable
-  script:
-    - mkdir -p reports
-    - 'zap-baseline.py -t http://juice-shop:3000 -r reports/zap-report.html || true'
-  artifacts:
-    when: always
-    paths:
-      - reports/zap-report.html
-    expire_in: 1 week
+  - template: Security/SAST.gitlab-ci.yml
 
 deploy:
   stage: deploy
@@ -74,6 +61,18 @@ deploy:
     - ssh ubuntu@VM-IP-ENTFERNT "docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   only:
     - feature/pipeline-scan-log
+
+zap-scan:
+  stage: dast
+  image: ghcr.io/zaproxy/zaproxy:stable
+  script:
+    - mkdir -p reports
+    - 'zap-baseline.py -t http://VM-IP-ENTFERNT:3000 -r reports/zap-report.html || true'
+  artifacts:
+    when: always
+    paths:
+      - reports/zap-report.html
+    expire_in: 1 week
 
 collect-results:
   stage: report

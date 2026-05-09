@@ -1,10 +1,8 @@
 stages:
   - package
   - test
-  - sast
   - sca-package
   - publish
-  - sca-container
   - deploy
   - dast
   - report
@@ -42,8 +40,6 @@ npm-audit:
     - npm install
     - npm audit || true
 
-include:
-  - template: Security/SAST.gitlab-ci.yml
 
 deploy:
   stage: deploy

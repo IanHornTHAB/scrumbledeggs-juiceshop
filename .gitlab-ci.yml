@@ -69,7 +69,7 @@ collect-results:
   when: always
   script:
     - mkdir -p reports
-    - node app/scripts/collect-results.js
+    - node scripts/collect-results.js
   variables:
     REPORTS_DIR: "reports"
   artifacts:

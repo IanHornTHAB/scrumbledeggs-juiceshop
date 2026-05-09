@@ -2,8 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const REPORTS_DIR = process.env.REPORTS_DIR || 'reports';
-const FILENAME = process.env.OUTPUT_FILENAME || 'scan-results-local.json';
-const OUTPUT_FILE = path.join(REPORTS_DIR, FILENAME);
+const OUTPUT_FILE = path.join(REPORTS_DIR, 'scan-results-local.json');
 const PIPELINE_ID = process.env.CI_PIPELINE_ID || 'local-run';
 const TIMESTAMP = new Date().toISOString();
 

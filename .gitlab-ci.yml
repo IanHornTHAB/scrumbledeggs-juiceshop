@@ -89,5 +89,5 @@ collect-results:
   artifacts:
     when: always
     paths:
-      - reports/scan-results-*.json
+      - reports/scan-results.json
     expire_in: 12 weeks

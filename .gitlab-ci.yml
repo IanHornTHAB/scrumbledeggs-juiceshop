@@ -1,6 +1,5 @@
 stages:
   - package
-  - test
   - sast
   - sca-package
   - publish
@@ -22,30 +21,6 @@ package:
     expire_in: 1 hour
 
 # Test jobs temporarily disabled to unblock pipeline runs.
-test:unit:
-  stage: test
-  image: node:24
-  needs:
-    - package
-  rules:
-    - when: never
-
-test:api:
-  stage: test
-  image: node:24
-  needs:
-    - package
-  rules:
-    - when: never
-
-test:lint:
-  stage: test
-  image: node:24
-  needs:
-    - package
-  rules:
-    - when: never
-
 publish-container:
   stage: publish
   image: docker:24

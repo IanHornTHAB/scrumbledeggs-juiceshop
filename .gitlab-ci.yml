@@ -5,9 +5,7 @@ stages:
   - sca-package
   - publish
   - sca-container
-  - deploy
   - fuzzing
-  - dast
 
 package:
   stage: package
@@ -89,7 +87,7 @@ publish-container:
     - echo "Pushing image to registry"
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     - docker push $CI_REGISTRY_IMAGE:latest
-    - echo "Docker Image published: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - "echo \"Docker Image published: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA\""
   after_script:
     - docker logout $CI_REGISTRY || true
   artifacts:

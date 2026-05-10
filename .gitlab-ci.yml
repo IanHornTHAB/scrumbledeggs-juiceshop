@@ -26,8 +26,7 @@ test:unit:
   stage: test
   image: node:24
   needs:
-    - job: package
-      artifacts: false
+    - package
   rules:
     - when: never
 
@@ -35,8 +34,7 @@ test:api:
   stage: test
   image: node:24
   needs:
-    - job: package
-      artifacts: false
+    - package
   rules:
     - when: never
 
@@ -44,8 +42,7 @@ test:lint:
   stage: test
   image: node:24
   needs:
-    - job: package
-      artifacts: false
+    - package
   rules:
     - when: never
 

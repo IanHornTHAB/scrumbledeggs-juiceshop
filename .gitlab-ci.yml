@@ -52,12 +52,12 @@ deploy:
     - chmod 400 "$SSH_PRIVATE_KEY"
     - ssh-add "$SSH_PRIVATE_KEY"
     - mkdir -p ~/.ssh
-    - ssh-keyscan -H VM-IP-ENTFERNT >> ~/.ssh/known_hosts
+    - ssh-keyscan -H $SSH_IP >> ~/.ssh/known_hosts
   script:
-    - ssh ubuntu@VM-IP-ENTFERNT "docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-    - ssh ubuntu@VM-IP-ENTFERNT "docker stop juice-shop || true"
-    - ssh ubuntu@VM-IP-ENTFERNT "docker rm juice-shop || true"
-    - ssh ubuntu@VM-IP-ENTFERNT "docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - ssh $SSH_USER@$SSH_IP "docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - ssh $SSH_USER@$SSH_IP "docker stop juice-shop || true"
+    - ssh $SSH_USER@$SSH_IP "docker rm juice-shop || true"
+    - ssh $SSH_USER@$SSH_IP "docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   only:
     - feature/pipeline-scan-log
 

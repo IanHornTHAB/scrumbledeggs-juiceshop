@@ -163,8 +163,30 @@ dependency-check:
     expire_in: 1 week
   allow_failure: true
 
-include:
-    - template: Security/SAST.gitlab-ci.yml
+
+sast-semgrep:
+  stage: sast
+  image: returntocorp/semgrep:stable
+  script:
+    - semgrep --config=auto --json --output=semgrep-report.json app/ || true
+  artifacts:
+    when: always
+    paths:
+      - semgrep-report.json
+    expire_in: 1 week
+
+
+sast-gitleaks:
+  stage: sast
+  image: zricethezav/gitleaks:stable
+  script:
+    - gitleaks detect --report-format json --report-path gitleaks-report.json || true
+  artifacts:
+    when: always
+    paths:
+      - gitleaks-report.json 
+    expire_in: 1 week
+
 
 zap-scan:
   stage: fuzzing

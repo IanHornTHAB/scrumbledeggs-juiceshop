@@ -27,6 +27,7 @@ test:unit:
   needs:
     - job: package
       artifacts: false
+  dependencies: []
   script:
     - cd app
     - npm install
@@ -44,6 +45,7 @@ test:api:
   needs:
     - job: package
       artifacts: false
+  dependencies: []
   script:
     - cd app
     - npm install
@@ -62,6 +64,7 @@ test:lint:
   needs:
     - job: package
       artifacts: false
+  dependencies: []
   script:
     - cd app
     - npm install

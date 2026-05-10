@@ -1,10 +1,13 @@
 stages:
   - package
   - test
+  - sast
   - sca-package
   - publish
   - sca-container
+  - deploy
   - fuzzing
+  - dast
 
 package:
   stage: package

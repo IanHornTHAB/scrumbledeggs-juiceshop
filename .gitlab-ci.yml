@@ -25,7 +25,8 @@ test:unit:
   stage: test
   image: node:24
   needs:
-    - package
+    - job: package
+      artifacts: false
   script:
     - cd app
     - npm install
@@ -41,7 +42,8 @@ test:api:
   stage: test
   image: node:24
   needs:
-    - package
+    - job: package
+      artifacts: false
   script:
     - cd app
     - npm install
@@ -58,7 +60,8 @@ test:lint:
   stage: test
   image: node:24
   needs:
-    - package
+    - job: package
+      artifacts: false
   script:
     - cd app
     - npm install

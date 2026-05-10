@@ -5,9 +5,7 @@ stages:
   - sca-package
   - publish
   - sca-container
-  - deploy
   - fuzzing
-  - dast
 
 package:
   stage: package
@@ -19,28 +17,148 @@ package:
     - npm run build:server
   artifacts:
     paths:
-      - build/
-      - frontend/dist/
+      - app/build/
+      - app/frontend/dist/
     expire_in: 1 hour
+
+test:unit:
+  stage: test
+  image: node:24
+  needs:
+    - package
+  script:
+    - cd app
+    - npm install
+    - npm run test:server
+  coverage: '/Lines\s*:\s*(\d+\.?\d*)\%/'
+  artifacts:
+    when: always
+    paths:
+      - app/build/reports/coverage/server-tests/
+    expire_in: 1 week
+
+test:api:
+  stage: test
+  image: node:24
+  needs:
+    - package
+  script:
+    - cd app
+    - npm install
+    - npm run test:api
+  coverage: '/Lines\s*:\s*(\d+\.?\d*)\%/'
+  artifacts:
+    when: always
+    paths:
+      - app/build/reports/coverage/api-tests/
+    expire_in: 1 week
+  allow_failure: false
+
+test:lint:
+  stage: test
+  image: node:24
+  needs:
+    - package
+  script:
+    - cd app
+    - npm install
+    - npm run lint:config
+  allow_failure: true
 
 publish-container:
   stage: publish
   image: docker:24
+  needs:
+    - package
+    - test:unit
+    - test:api
   services:
     - docker:24-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: "/certs"
   script:
     - cd app
+    - echo "Building Docker image with tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+    - docker build -t $CI_REGISTRY_IMAGE:latest .
+    - echo "Logging into Docker Registry"
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "Pushing image to registry"
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - "echo \"Docker Image published: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA\""
+  after_script:
+    - docker logout $CI_REGISTRY || true
+  artifacts:
+    reports:
+      dotenv: build.env
+    expire_in: 1 hour
+  timeout: 30 minutes
+  allow_failure: false
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+container-scanning:
+  stage: sca-container
+  image: aquasec/trivy:latest
+  needs:
+    - publish-container
+  script:
+    - mkdir -p reports
+    - trivy image --format json --output reports/trivy-report.json $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - trivy image --format sarif --output reports/trivy-report.sarif $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - trivy image --format table --output reports/trivy-report.txt $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  artifacts:
+    when: always
+    paths:
+      - reports/trivy-report.json
+      - reports/trivy-report.sarif
+      - reports/trivy-report.txt
+    reports:
+      container_scanning: reports/trivy-report.sarif
+    expire_in: 1 week
+  allow_failure: true
 
 npm-audit:
   stage: sca-package
   image: node:24
+  needs:
+    - package
   script:
+    - mkdir -p reports
     - cd app
-    - npm install
-    - npm audit || true
+    - npm install --production=false
+    - npm audit --json --audit-level=low 2>&1 | tee ../reports/npm-audit.json || true
+    - npm audit --audit-level=low 2>&1 | tee ../reports/npm-audit.txt || true
+  artifacts:
+    when: always
+    paths:
+      - reports/npm-audit.json
+      - reports/npm-audit.txt
+    expire_in: 1 week
+  allow_failure: true
+
+dependency-check:
+  stage: sca-package
+  image: node:24
+  needs:
+    - package
+  script:
+    - mkdir -p reports
+    - cd app
+    - npm list --production 2>&1 | tee ../reports/npm-dependencies.txt || true
+    - npm outdated --json 2>&1 > ../reports/npm-outdated.json || true
+  artifacts:
+    when: always
+    paths:
+      - reports/npm-dependencies.txt
+      - reports/npm-outdated.json
+    expire_in: 1 week
+  allow_failure: true
 
 
 sast-semgrep:
@@ -70,14 +188,23 @@ sast-gitleaks:
 zap-scan:
   stage: fuzzing
   image: ghcr.io/zaproxy/zaproxy:stable
+  needs:
+    - publish-container
   services:
     - name: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
       alias: juice-shop
+      entrypoint: [""]
+  variables:
+    FF_USE_FASTZIP: "true"
+    CACHE_COMPRESSION_LEVEL: "fastest"
   script:
     - mkdir -p reports
+    - sleep 10
     - 'zap-baseline.py -t http://juice-shop:3000 -r reports/zap-report.html || true'
   artifacts:
     when: always
     paths:
       - reports/zap-report.html
     expire_in: 1 week
+  timeout: 30 minutes
+  allow_failure: true

@@ -49,10 +49,10 @@ test:api:
   script:
     - cd app
     - npm install --include=dev --no-audit --no-fund
-    - echo "PWD: $(pwd)"
-    - echo "List app dir:" && ls -la || true
-    - echo "List test dir:" && ls -la test || true
-    - echo "Jest will list discovered tests:" && npx jest --listTests --runInBand --testMatch "<rootDir>/test/api/*Spec.[jt]s" || true
+    - 'echo "PWD: $(pwd)"'
+    - 'echo "List app dir:" && ls -la || true'
+    - 'echo "List test dir:" && ls -la test || true'
+    - 'echo "Jest will list discovered tests:" && npx jest --listTests --runInBand --testMatch "<rootDir>/test/api/*Spec.[jt]s" || true'
     - npm run test:api
   coverage: '/Lines\s*:\s*(\d+\.?\d*)\%/'
   artifacts:

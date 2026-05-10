@@ -55,10 +55,10 @@ deploy:
     - mkdir -p ~/.ssh
     - ssh-keyscan -H $SSH_IP >> ~/.ssh/known_hosts
   script:
-    - ssh $SSH_USER@$SSH_IP "docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-    - ssh $SSH_USER@$SSH_IP "docker stop juice-shop || true"
-    - ssh $SSH_USER@$SSH_IP "docker rm juice-shop || true"
-    - ssh $SSH_USER@$SSH_IP "docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  - ssh $SSH_USER@$SSH_IP "sudo docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  - ssh $SSH_USER@$SSH_IP "sudo docker stop juice-shop || true"
+  - ssh $SSH_USER@$SSH_IP "sudo docker rm juice-shop || true"
+  - ssh $SSH_USER@$SSH_IP "sudo docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   only:
     - feature/pipeline-scan-log
 

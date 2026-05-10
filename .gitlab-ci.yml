@@ -50,6 +50,7 @@ deploy:
     - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
     - chmod 400 "$SSH_PRIVATE_KEY"
+    - cat "$SSH_PRIVATE_KEY"
     - ssh-add "$SSH_PRIVATE_KEY"
     - mkdir -p ~/.ssh
     - ssh-keyscan -H $SSH_IP >> ~/.ssh/known_hosts

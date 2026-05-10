@@ -50,12 +50,15 @@ deploy:
     - apk add --no-cache openssh-client
     - eval $(ssh-agent -s)
     - chmod 400 "$SSH_PRIVATE_KEY"
-    - cat "$SSH_PRIVATE_KEY"
     - ssh-add "$SSH_PRIVATE_KEY"
     - mkdir -p ~/.ssh
     - ssh-keyscan -H $SSH_IP >> ~/.ssh/known_hosts
   script:
-    - ssh $SSH_USER@$SSH_IP "which docker || find / -name docker -type f 2>/dev/null | head -5"
+    - ssh $SSH_USER@$SSH_IP "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
+    - ssh $SSH_USER@$SSH_IP "docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - ssh $SSH_USER@$SSH_IP "docker stop juice-shop || true"
+    - ssh $SSH_USER@$SSH_IP "docker rm juice-shop || true"
+    - ssh $SSH_USER@$SSH_IP "docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   only:
     - feature/pipeline-scan-log
 

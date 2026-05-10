@@ -30,7 +30,7 @@ test:unit:
   dependencies: []
   script:
     - cd app
-    - npm install
+    - npm install --include=dev --no-audit --no-fund
     - npm run test:server
   coverage: '/Lines\s*:\s*(\d+\.?\d*)\%/'
   artifacts:
@@ -48,7 +48,7 @@ test:api:
   dependencies: []
   script:
     - cd app
-    - npm install
+    - npm install --include=dev --no-audit --no-fund
     - npm run test:api
   coverage: '/Lines\s*:\s*(\d+\.?\d*)\%/'
   artifacts:
@@ -67,7 +67,7 @@ test:lint:
   dependencies: []
   script:
     - cd app
-    - npm install
+    - npm install --include=dev --no-audit --no-fund
     - npm run lint:config
   allow_failure: true
 

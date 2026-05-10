@@ -126,7 +126,7 @@ sast-semgrep:
 
 sast-gitleaks:
   stage: sast
-  image: zricethezav/gitleaks:stable
+  image: zricethezav/gitleaks:latest
   script:
     - gitleaks detect --report-format json --report-path gitleaks-report.json || true
   artifacts:

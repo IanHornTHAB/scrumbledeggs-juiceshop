@@ -4,7 +4,7 @@ stages:
   - sca-package
   - publish
   - sca-container
-  - dastt
+  - dast-scan
  
 
 package:
@@ -139,7 +139,7 @@ sast-gitleaks:
     expire_in: 1 week
 
 dast-zap:
-  stage: dastt
+  stage: dast-scan
   image: ghcr.io/zaproxy/zaproxy:stable
   needs:
     - publish-container

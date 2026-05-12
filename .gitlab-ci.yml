@@ -4,7 +4,6 @@ stages:
   - sca-package
   - publish
   - sca-container
-  - fuzzing
   - dast
  
 

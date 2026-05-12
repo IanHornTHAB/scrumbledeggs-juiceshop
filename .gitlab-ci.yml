@@ -5,6 +5,8 @@ stages:
   - publish
   - sca-container
   - fuzzing
+  - dast
+ 
 
 package:
   stage: package
@@ -137,8 +139,8 @@ sast-gitleaks:
       - gitleaks-report.json
     expire_in: 1 week
 
-zap-scan:
-  stage: fuzzing
+dast-zap:
+  stage: dast
   image: ghcr.io/zaproxy/zaproxy:stable
   needs:
     - publish-container

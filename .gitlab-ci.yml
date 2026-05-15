@@ -167,8 +167,11 @@ dast-zap:
     - deploy
   script:
     - sleep 20
+    - cd /zap/wrk
     - zap-baseline.py -t http://$SSH_IP:3000 -r zap-report.html || true
-    - ls -la reports
+    - cp zap-report.html $CI_PROJECT_DIR/zap-report.html
+    - cd $CI_PROJECT_DIR
+    - ls -la
     - test -f zap-report.html
   artifacts:
     when: always

@@ -165,10 +165,12 @@ dast-zap:
   image: ghcr.io/zaproxy/zaproxy:stable
   needs:
     - deploy
+  variables:
+    GIT_STRATEGY: none
   script:
     - sleep 20
-    - zap-baseline.py -t http://$SSH_IP:3000 -r zap-report.html || true
-    - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/zap-report.html
+    - zap-baseline.py -t http://$SSH_IP:3000 --autooff -r /tmp/zap-report.html || true
+    - cp /tmp/zap-report.html $CI_PROJECT_DIR/zap-report.html
     - test -f $CI_PROJECT_DIR/zap-report.html
   artifacts:
     when: always
@@ -176,4 +178,4 @@ dast-zap:
       - zap-report.html
     expire_in: 1 week
   timeout: 30 minutes
-  allow_failure: false #true
+  allow_failure: false

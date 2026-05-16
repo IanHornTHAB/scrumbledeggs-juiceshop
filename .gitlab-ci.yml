@@ -167,12 +167,10 @@ dast-zap:
     - deploy
   script:
     - sleep 20
-    - cd /zap/wrk
-    - zap-baseline.py -t http://$SSH_IP:3000 -r zap-report.html || true
-    - cp zap-report.html $CI_PROJECT_DIR/zap-report.html
-    - cd $CI_PROJECT_DIR
-    - ls -la
-    - test -f zap-report.html
+    - mkdir -p /zap/wrk
+    - zap-baseline.py -t http://$SSH_IP:3000 -r /zap/wrk/zap-report.html || true
+    - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/zap-report.html
+    - test -f $CI_PROJECT_DIR/zap-report.html   # Pfad korrigiert
   artifacts:
     when: always
     paths:

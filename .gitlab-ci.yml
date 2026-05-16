@@ -9,6 +9,7 @@ stages:
   - fuzzing
   - dast
   - report 
+  - dast-scan
 
 package:
   stage: package
@@ -59,8 +60,6 @@ deploy:
     - ssh $SSH_USER@$SSH_IP "docker stop juice-shop || true"
     - ssh $SSH_USER@$SSH_IP "docker rm juice-shop || true"
     - ssh $SSH_USER@$SSH_IP "docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-  only:
-    - feature/pipeline-scan-log
 
 include:
     - template: Security/SAST.gitlab-ci.yml
@@ -93,3 +92,23 @@ collect-results:
     paths:
       - reports/scan-results.json
     expire_in: 12 weeks
+
+dast-zap:
+  stage: dast-scan
+  image: ghcr.io/zaproxy/zaproxy:stable
+  needs:
+    - deploy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - sleep 20
+    - mkdir -p /zap/wrk
+    - zap-baseline.py -t http://$SSH_IP:3000 -r zap-report.html || true
+    - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/zap-report.html
+  artifacts:
+    when: always
+    paths:
+      - zap-report.html
+    expire_in: 1 week
+  timeout: 30 minutes
+  allow_failure: false

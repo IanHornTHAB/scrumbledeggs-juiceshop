@@ -169,9 +169,10 @@ dast-zap:
     GIT_STRATEGY: none
   script:
     - sleep 20
-    - zap-baseline.py -t http://$SSH_IP:3000 --autooff -r /tmp/zap-report.html || true
-    - cp /tmp/zap-report.html $CI_PROJECT_DIR/zap-report.html
-    - test -f $CI_PROJECT_DIR/zap-report.html
+    - mkdir -p /zap/wrk
+    - mount --bind /zap/wrk /zap/wrk || true
+    - zap-baseline.py -t http://$SSH_IP:3000 -r zap-report.html || true
+    - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/zap-report.html
   artifacts:
     when: always
     paths:

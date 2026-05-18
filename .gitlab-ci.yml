@@ -23,6 +23,30 @@ package:
       - frontend/dist/
     expire_in: 1 hour
 
+sast-semgrep:
+  stage: sast
+  image: returntocorp/semgrep:stable
+  script:
+    - semgrep --config=auto --json --output=semgrep-report.json app/ || true
+  artifacts:
+    when: always
+    paths:
+      - semgrep-report.json
+    expire_in: 1 week
+
+sast-gitleaks:
+  stage: sast
+  image: 
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  script:
+    - gitleaks detect --report-format json --report-path gitleaks-report.json || true
+  artifacts:
+    when: always
+    paths:
+      - gitleaks-report.json
+    expire_in: 1 week    
+
 publish-container:
   stage: publish
   image: docker:24

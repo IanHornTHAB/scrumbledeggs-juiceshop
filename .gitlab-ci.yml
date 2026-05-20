@@ -6,6 +6,7 @@ stages:
   - publish
   - sca-container
   - deploy
+  - fuzzing
   - dast-scan
   - report
 

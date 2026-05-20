@@ -76,7 +76,7 @@ integration-test:
     - docker rm juice-shop-test || true
 
     - docker run -d --name juice-shop-test -P $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-    - sleep 20
+    - sleep 60
 
     - apk add --no-cache curl
     - "export PORT=$(docker port juice-shop-test 3000/tcp | cut -d: -f2)"

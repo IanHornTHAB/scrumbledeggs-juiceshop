@@ -1,9 +1,9 @@
 stages:
   - package
-  - test
   - sast
   - sca-package
   - publish
+  - test
   - sca-container
   - deploy
   - dast-scan
@@ -57,6 +57,31 @@ publish-container:
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+integration-test:
+  stage: test
+  image: docker:24
+
+  services:
+    - name: docker:24-dind
+
+  needs:
+    - publish-container
+
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+    - docker run -d --name juice-shop-test -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+    - sleep 20
+
+    - apk add --no-cache curl
+
+    - curl -f http://docker:3000
+
+    - docker stop juice-shop-test
+    - docker rm juice-shop-test
 
 npm-audit:
   stage: sca-package

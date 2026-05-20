@@ -79,7 +79,9 @@ integration-test:
 
     - sleep 20
 
-    - docker exec juice-shop-test node -e "require('http').get('http://localhost:3000', res => process.exit(res.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"
+    - >
+      docker exec juice-shop-test node -e
+      "require('http').get('http://localhost:3000', res => process.exit(res.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"
 
     - docker stop juice-shop-test
     - docker rm juice-shop-test

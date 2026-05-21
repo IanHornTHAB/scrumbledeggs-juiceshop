@@ -163,13 +163,16 @@ fuzzing:
       done
     
     - |
-      TOKEN=$(curl -s -X POST http://$SSH_IP:3000/rest/user/login \
+      RESPONSE=$(curl -s -X POST http://$SSH_IP:3000/rest/user/login \
         -H "Content-Type: application/json" \
-        -d "{\"email\":\"$JUICESHOP_ADMIN_EMAIL\",\"password\":\"$JUICESHOP_ADMIN_PASSWORD\"}" \
-        | jq -r '.authentication.token')
+        -d "{\"email\":\"$JUICESHOP_ADMIN_EMAIL\",\"password\":\"$JUICESHOP_ADMIN_PASSWORD\"}")
+  
+      echo "Login Response: $RESPONSE"
 
-      if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-        echo "Kein JWT-Token erhalten"
+      TOKEN=$(echo "$RESPONSE" | jq -r '.authentication.token // empty')
+
+      if [ -z "$TOKEN" ]; then
+        echo "FEHLER: Kein Token erhalten. Response war: $RESPONSE"
         exit 1
       fi
 

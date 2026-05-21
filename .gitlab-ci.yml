@@ -80,8 +80,8 @@ integration-test:
 
     - apk add --no-cache curl
     - "export PORT=$(docker port juice-shop-test 3000/tcp | cut -d: -f2)"
-    - curl -f http://localhost:$PORT
-
+    - curl -f http://docker:$PORT
+    
     - docker stop juice-shop-test
     - docker rm juice-shop-test
 

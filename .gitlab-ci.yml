@@ -125,6 +125,8 @@ dast-zap:
   timeout: 30 minutes
   allow_failure: false
 
+
+# NEU
 fuzzing:
   stage: fuzzing
   image: alpine:3.20
@@ -185,7 +187,6 @@ fuzzing:
       EOF
   script:
     - source fuzzing.env
-    
     - |
       ffuf \
         -u http://$SSH_IP:3000/FUZZ \
@@ -228,7 +229,6 @@ fuzzing:
     
     - |
       echo "Prüfe Reports auf HTTP 500"
-
       for report in reports/fuzzing/*.json; do
         COUNT=$(jq '[.results[] | select(.status == 500)] | length' "$report")
 

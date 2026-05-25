@@ -64,11 +64,13 @@ unit-test:
   script:
     - cd app
     - npm install
+    - npm install karma-json-reporter --save-dev
     - npm test
+
   artifacts:
     when: always
     paths:
-      - app/test-results.log
+      - app/test-results.json
 
 integration-test:
   stage: test

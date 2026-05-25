@@ -64,7 +64,7 @@ unit-test:
   script:
     - cd app
     - npm install
-    - npm run test:server 
+    - npm test
   artifacts:
     when: always
     paths:

@@ -64,13 +64,13 @@ unit-test:
   script:
     - cd app
     - npm install
-    - cd frontend && npm install karma-junit-reporter --save-dev && cd ..
+    - cd frontend && npm install karma-json-reporter --save-dev && cd ..
     - npm test
 
   artifacts:
     when: always
     paths:
-      - app/test-results.xml
+      - app/test-results.json
     expire_in: 1 week
 
 integration-test:

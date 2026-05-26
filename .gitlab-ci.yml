@@ -70,7 +70,7 @@ unit-test:
   artifacts:
     when: always
     paths:
-      - app/test-results.json
+      - app/frontend/test-results.json
     expire_in: 1 week
 
 integration-test:

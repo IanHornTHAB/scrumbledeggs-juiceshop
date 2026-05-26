@@ -66,12 +66,11 @@ unit-test:
     - npm install
     - cd frontend && npm install karma-json-reporter --save-dev && cd ..
     - npm test
-    - find . -name "test-results.json" 2>/dev/null
 
   artifacts:
     when: always
     paths:
-      - app/frontend/test-results.json
+      - app/frontend/src/test-results.json
     expire_in: 1 week
 
 integration-test:

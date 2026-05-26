@@ -15,7 +15,8 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
-      require('@angular-devkit/build-angular/plugins/karma')
+      require('@angular-devkit/build-angular/plugins/karma'),
+      require('karma-junit-reporter')
     ],
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
@@ -28,9 +29,9 @@ module.exports = function (config) {
         { type: 'lcovonly' }
       ]
     },
-        reporters: ['progress', 'json'],
-    jsonReporter: {
-      outputFile: 'test-results.json',
+        reporters: ['progress', 'junit'],
+    junitReporter: {
+      outputFile: 'test-results.xml',
     
     },
     port: 9876,

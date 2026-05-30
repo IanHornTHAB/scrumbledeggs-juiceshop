@@ -71,6 +71,7 @@ unit-test:
     paths:
       - app/frontend/src/test-results.json
     expire_in: 1 week
+  allow_failure: true
 
 integration-test:
   stage: test

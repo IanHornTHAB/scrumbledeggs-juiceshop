@@ -36,7 +36,7 @@ sast-semgrep:
 
 sast-gitleaks:
   stage: sast
-  image: 
+  image:
     name: zricethezav/gitleaks:latest
     entrypoint: [""]
   script:
@@ -45,7 +45,7 @@ sast-gitleaks:
     when: always
     paths:
       - gitleaks-report.json
-    expire_in: 1 week    
+    expire_in: 1 week
 
 publish-container:
   stage: publish
@@ -57,6 +57,20 @@ publish-container:
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+unit-test:
+  stage: test
+  image: timbru31/node-chrome
+  script:
+    - cd app
+    - npm install
+    - cd frontend && npm install karma-json-reporter --save-dev && cd ..
+    - npm test
+  artifacts:
+    when: always
+    paths:
+      - app/frontend/src/test-results.json
+    expire_in: 1 week
 
 integration-test:
   stage: test
@@ -104,24 +118,7 @@ deploy:
     - ssh $SSH_USER@$SSH_IP "docker run -d --name juice-shop -p 3000:3000 $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
 
 include:
-    - template: Security/SAST.gitlab-ci.yml
-
-collect-results:
-  stage: report
-  image: node:24
-  needs:
-    - dast-zap
-  when: always
-  script:
-    - mkdir -p reports
-    - node scripts/collect-results.js
-  variables:
-    REPORTS_DIR: "reports"
-  artifacts:
-    when: always
-    paths:
-      - reports/scan-results.json
-    expire_in: 12 weeks
+  - template: Security/SAST.gitlab-ci.yml
 
 dast-zap:
   stage: dast-scan
@@ -133,13 +130,39 @@ dast-zap:
   script:
     - sleep 20
     - mkdir -p /zap/wrk
-    - zap-baseline.py -t http://$SSH_IP:3000 -r zap-report.html || true
+    - zap-baseline.py -t http://$SSH_IP:3000 -J zap-report.json -r zap-report.html || true
     - mkdir -p $CI_PROJECT_DIR/reports
+    - cp /zap/wrk/zap-report.json $CI_PROJECT_DIR/reports/zap-report.json
     - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/reports/zap-report.html
   artifacts:
     when: always
     paths:
+      - reports/zap-report.json
       - reports/zap-report.html
     expire_in: 1 week
   timeout: 30 minutes
   allow_failure: false
+
+collect-results:
+  stage: report
+  image: node:24
+  needs:
+    - dast-zap
+    - sast-semgrep
+    - sast-gitleaks
+  when: always
+  script:
+    - mkdir -p reports
+    - >
+      curl --fail
+      -H "PRIVATE-TOKEN: $GITLAB_TOKEN"
+      "https://gitlab-host.entfernt.invalid/s/scrumbledeggs-vulnerability-dashboard/-/raw/main/juice-shop-security-dashboard/scripts/collect-results.js"
+      -o collect-results.js
+    - node collect-results.js
+  variables:
+    REPORTS_DIR: "reports"
+  artifacts:
+    when: always
+    paths:
+      - reports/scan-results.json
+    expire_in: 12 weeks

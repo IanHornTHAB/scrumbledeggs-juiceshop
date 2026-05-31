@@ -132,7 +132,7 @@ dast-zap:
   script:
     - sleep 20
     - mkdir -p /zap/wrk
-    - zap-full-scan.py -t http://$SSH_IP:3000 -r zap-report.html || true
+    - zap-full-scan.py -t http://$SSH_IP:3000 -r zap-report.html -a -d || true
     - mkdir -p $CI_PROJECT_DIR/reports
     - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/reports/zap-report.html
   artifacts:

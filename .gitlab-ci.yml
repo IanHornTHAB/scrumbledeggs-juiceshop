@@ -157,8 +157,9 @@ collect-results:
   when: always
   script:
     - mkdir -p reports
+    - echo "Token starts with $(echo $GITLAB_TOKEN | cut -c1-4)..."
     - >
-      curl --fail
+      curl -v
       -H "PRIVATE-TOKEN: $GITLAB_TOKEN"
       "https://gitlab-host.entfernt.invalid/s/scrumbledeggs-vulnerability-dashboard/-/raw/main/juice-shop-security-dashboard/scripts/collect-results.js"
       -o collect-results.js

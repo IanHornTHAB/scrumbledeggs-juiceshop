@@ -157,7 +157,7 @@ collect-results:
   when: always
   script:
     - mkdir -p reports
-    - 'curl --fail -H "JOB-TOKEN: $CI_JOB_TOKEN" "https://gitlab-host.entfernt.invalid/agilesec26/sd-scrumbledeggs/scrumbledeggs-vulnerability-dashboard/-/raw/main/juice-shop-security-dashboard/scripts/collect-results.js" -o collect-results.js'
+    - '- curl --fail -u "$DEPLOY_TOKEN_USER:$DEPLOY_TOKEN" "https://gitlab-host.entfernt.invalid/agilesec26/sd-scrumbledeggs/scrumbledeggs-vulnerability-dashboard/-/raw/main/juice-shop-security-dashboard/scripts/collect-results.js" -o collect-results.js'
     - node collect-results.js
   variables:
     REPORTS_DIR: "reports"

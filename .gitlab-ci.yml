@@ -139,6 +139,6 @@ dast-zap:
     when: always
     paths:
       - reports/zap-report.html
-    expire_in: 1 hour
+    expire_in: 1 week
   timeout: 30 minutes
   allow_failure: false

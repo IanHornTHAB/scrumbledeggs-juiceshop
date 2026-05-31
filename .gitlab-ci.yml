@@ -161,7 +161,7 @@ collect-results:
     - >
       curl -v
       -H "PRIVATE-TOKEN: $GITLAB_TOKEN"
-      "https://gitlab-host.entfernt.invalid/s/scrumbledeggs-vulnerability-dashboard/-/raw/main/juice-shop-security-dashboard/scripts/collect-results.js"
+      "https://gitlab-host.entfernt.invalid/agilesec26/sd-scumbledeggs/scrumbledeggs-vulnerability-dashboard/-/raw/main/juice-shop-security-dashboard/scripts/collect-results.js"
       -o collect-results.js
     - node collect-results.js
   variables:

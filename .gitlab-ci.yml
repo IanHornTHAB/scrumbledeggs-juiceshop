@@ -130,7 +130,7 @@ dast-zap:
   variables:
     GIT_STRATEGY: none
   script:
-    - sleep 20
+    - sleep 60
     - mkdir -p /zap/wrk
     - zap-full-scan.py -t http://$SSH_IP:3000 -r zap-report.html -a || true
     - mkdir -p $CI_PROJECT_DIR/reports

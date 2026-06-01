@@ -126,12 +126,9 @@ dast-zap:
   allow_failure: false
 
 
-# NEU
 fuzzing:
   stage: fuzzing
   image: alpine:3.20
-  needs:
-    - deploy
   before_script:
     - apk add --no-cache curl wget jq bash    
     - wget -q https://github.com/ffuf/ffuf/releases/download/v2.1.0/ffuf_2.1.0_linux_amd64.tar.gz

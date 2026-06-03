@@ -111,6 +111,7 @@ collect-results:
   image: node:24
   needs:
     - dast-zap
+    - sast-gitleaks
   when: always
   script:
     - mkdir -p reports

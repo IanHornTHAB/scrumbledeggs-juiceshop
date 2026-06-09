@@ -27,7 +27,7 @@ sast-semgrep:
   stage: sast
   image: returntocorp/semgrep:stable
   script:
-    - semgrep --config=auto --json --output=semgrep-report.json app/ || true
+    - semgrep --config p/python --json --output=semgrep-report.json app/ || true
   artifacts:
     when: always
     paths:

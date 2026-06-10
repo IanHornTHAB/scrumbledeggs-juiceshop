@@ -59,6 +59,20 @@ publish-container:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
+unit-test:
+  stage: test 
+  image: timbru31/node-chrome
+  script:
+    - cd app
+    - npm ci
+    - npm test
+
+  artifacts:
+    when: always
+    paths:
+      - app/frontend/src/test-results.json
+    expire_in: 1 week
+
 integration-test:
   stage: test
   image: docker:24

@@ -1,0 +1,108 @@
+{
+  "pipeline_run_id": "local-run",
+  "timestamp": "2026-06-11T12:01:16.740Z",
+  "source": "juice-shop-pipeline",
+  "total_findings": 4,
+  "stage_summary": {
+    "sast": 1,
+    "secret_detection": 1,
+    "dast": 1,
+    "fuzzing": 1
+  },
+  "artifacts": {
+    "sast": {
+      "semgrep": {
+        "tool_name": "Semgrep",
+        "scan_type": "SAST",
+        "artifact_path": "semgrep-report.json",
+        "status": "error",
+        "result_count": 0,
+        "report": null,
+        "error_message": "Report file not found"
+      }
+    },
+    "secret_detection": {
+      "gitleaks": {
+        "tool_name": "Gitleaks",
+        "scan_type": "SECRET_DETECTION",
+        "artifact_path": "gitleaks-report.json",
+        "status": "error",
+        "result_count": 0,
+        "report": null,
+        "error_message": "Report file not found"
+      }
+    },
+    "dast": {
+      "zap": {
+        "tool_name": "ZAP",
+        "scan_type": "DAST",
+        "artifact_path": "zap-report.html",
+        "status": "error",
+        "result_count": 0,
+        "report": null,
+        "error_message": "Report file not found"
+      }
+    },
+    "fuzzing": [
+      {
+        "tool_name": "ffuf",
+        "scan_type": "FUZZING",
+        "artifact_path": "fuzzing/",
+        "status": "error",
+        "result_count": 0,
+        "report": null,
+        "error_message": "Fuzzing report directory not found"
+      }
+    ]
+  },
+  "findings": [
+    {
+      "tool_name": "Semgrep",
+      "scan_type": "SAST",
+      "artifact_path": "semgrep-report.json",
+      "vulnerability_name": "N/A",
+      "severity": "N/A",
+      "affected_component": "N/A",
+      "pipeline_run_id": "local-run",
+      "timestamp": "2026-06-11T12:01:16.740Z",
+      "status": "error",
+      "error_message": "Report file not found"
+    },
+    {
+      "tool_name": "Gitleaks",
+      "scan_type": "SECRET_DETECTION",
+      "artifact_path": "gitleaks-report.json",
+      "vulnerability_name": "N/A",
+      "severity": "N/A",
+      "affected_component": "N/A",
+      "pipeline_run_id": "local-run",
+      "timestamp": "2026-06-11T12:01:16.740Z",
+      "status": "error",
+      "error_message": "Report file not found"
+    },
+    {
+      "tool_name": "ZAP",
+      "scan_type": "DAST",
+      "artifact_path": "zap-report.html",
+      "vulnerability_name": "N/A",
+      "severity": "N/A",
+      "affected_component": "N/A",
+      "pipeline_run_id": "local-run",
+      "timestamp": "2026-06-11T12:01:16.740Z",
+      "status": "error",
+      "error_message": "Report file not found"
+    },
+    {
+      "tool_name": "ffuf",
+      "scan_type": "FUZZING",
+      "artifact_path": "fuzzing/",
+      "vulnerability_name": "N/A",
+      "severity": "N/A",
+      "affected_component": "N/A",
+      "pipeline_run_id": "local-run",
+      "timestamp": "2026-06-11T12:01:16.740Z",
+      "status": "error",
+      "error_message": "Fuzzing report directory not found"
+    }
+  ]
+}

@@ -216,11 +216,26 @@ function parseGitleaksReport() {
     };
   }
 
-  const findingsData = Array.isArray(report.data)
+  const rawFindingsData = Array.isArray(report.data)
     ? report.data
     : Array.isArray(report.data.findings)
       ? report.data.findings
       : [];
+
+  // Gitleaks scans the full git history, so the same secret is re-reported in
+  // every commit it appears in. Collapse those to unique secrets (rule+file+secret)
+  // so the dashboard counts real distinct findings instead of per-commit duplicates.
+  const seenSecrets = new Set();
+  const findingsData = rawFindingsData.filter(result => {
+    const dedupeKey = [
+      result.RuleID || result.rule_id || '',
+      result.File || result.file || '',
+      result.Secret || result.secret || result.Match || result.match || ''
+    ].join('|');
+    if (seenSecrets.has(dedupeKey)) return false;
+    seenSecrets.add(dedupeKey);
+    return true;
+  });
 
   if (findingsData.length === 0) {
     return {

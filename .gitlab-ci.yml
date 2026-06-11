@@ -29,9 +29,9 @@ sast-semgrep:
   image: returntocorp/semgrep:stable
   script:
     - mkdir -p reports
-    - semgrep --config=auto --json --output=reports/findings-semgrep.json app/ || true
+    - semgrep --config=auto --json --output=reports/semgrep-report.json app/ || true
     - |
-      if [ ! -s reports/findings-semgrep.json ]; then
+      if [ ! -s reports/semgrep-report.json ]; then
         echo "Semgrep report missing. Creating fallback JSON."
 
         printf '%s\n' \
@@ -39,15 +39,15 @@ sast-semgrep:
           '  "tool_name": "semgrep",' \
           '  "scan_type": "sast",' \
           '  "findings": []' \
-          '}' > reports/findings-semgrep.json
+          '}' > reports/semgrep-report.json
       fi
 
-    - cat reports/findings-semgrep.json
+    - cat reports/semgrep-report.json
 
   artifacts:
     when: always
     paths:
-      - reports/findings-semgrep.json
+      - reports/semgrep-report.json
     expire_in: 1 week
 
 sast-gitleaks:
@@ -57,11 +57,11 @@ sast-gitleaks:
     entrypoint: [""]
   script:
     - mkdir -p reports
-    - gitleaks detect --report-format json --report-path reports/findings-gitleaks.json || true
+    - gitleaks detect --report-format json --report-path reports/gitleaks-report.json || true
     - |
-      if [ ! -s reports/findings-gitleaks.json ]; then
+      if [ ! -s reports/gitleaks-report.json ]; then
         echo "Gitleaks report missing. Creating fallback JSON."
-        cat > reports/findings-gitleaks.json <<EOF
+        cat > reports/gitleaks-report.json <<EOF
       {
         "tool_name": "gitleaks",
         "scan_type": "secret_detection",
@@ -72,7 +72,7 @@ sast-gitleaks:
   artifacts:
     when: always
     paths:
-      - reports/findings-gitleaks.json
+      - reports/gitleaks-report.json
     expire_in: 1 week
 
 publish-container:
@@ -115,7 +115,7 @@ integration-test:
     - docker run -d --name juice-shop-test $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     - sleep 60
     - docker logs juice-shop-test
-    - docker run --rm --network container:juice-shop-test curlimages/curl:latest -f http://localhost:3000
+    - docker run --rm --network container:juice-shop-test alpine:latest wget -qO /dev/null http://localhost:3000
     - docker stop juice-shop-test
     - docker rm juice-shop-test
 

@@ -488,16 +488,19 @@ function collectResults() {
     ...fuzzingResult.findings
   ];
 
+  const countRealFindings = findings =>
+    findings.filter(f => f.status === 'success' && f.vulnerability_name !== 'No findings').length;
+
   const output = {
     pipeline_run_id: PIPELINE_ID,
     timestamp: TIMESTAMP,
     source: 'juice-shop-pipeline',
-    total_findings: allFindings.length,
+    total_findings: countRealFindings(allFindings),
     stage_summary: {
-      sast: semgrepResult.findings.length,
-      secret_detection: gitleaksResult.findings.length,
-      dast: zapResult.findings.length,
-      fuzzing: fuzzingResult.findings.length
+      sast: countRealFindings(semgrepResult.findings),
+      secret_detection: countRealFindings(gitleaksResult.findings),
+      dast: countRealFindings(zapResult.findings),
+      fuzzing: countRealFindings(fuzzingResult.findings)
     },
     artifacts: {
       sast: {

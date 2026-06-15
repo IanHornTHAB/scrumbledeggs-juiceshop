@@ -138,6 +138,8 @@ collect-results:
       - reports/scan-results.json
     expire_in: 12 weeks
 
+#TEST
+
 dast-zap:
   stage: dast-scan
   image: ghcr.io/zaproxy/zaproxy:stable

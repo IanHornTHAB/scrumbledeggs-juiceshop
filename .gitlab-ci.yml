@@ -287,6 +287,8 @@ sca-container:
     - publish-container
   variables:
     GIT_STRATEGY: fetch
+  before_script:
+    - apk add --no-cache jq
   script:
     - mkdir -p reports
     - trivy image

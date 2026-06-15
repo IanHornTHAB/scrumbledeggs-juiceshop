@@ -138,8 +138,6 @@ collect-results:
       - reports/scan-results.json
     expire_in: 12 weeks
 
-#TEST
-
 dast-zap:
   stage: dast-scan
   image: ghcr.io/zaproxy/zaproxy:stable
@@ -279,3 +277,38 @@ fuzzing:
     expire_in: 1 week
   rules:
     - when: always
+
+sca-container:
+  stage: sca-container
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  needs:
+    - publish-container
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - mkdir -p reports/sca-container
+    - trivy image
+        --format json
+        --output reports/sca-container/trivy-report.json
+        --severity LOW,MEDIUM,HIGH,CRITICAL
+        --ignorefile .trivyignore
+        --username $CI_REGISTRY_USER
+        --password $CI_REGISTRY_PASSWORD
+        $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - |
+      CRITICAL_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' reports/sca-container/trivy-report.json)
+      echo "Gefundene CRITICAL Findings: $CRITICAL_COUNT"
+      if [ "$CRITICAL_COUNT" -gt 0 ]; then
+        echo "WARNUNG: $CRITICAL_COUNT kritische Schwachstellen gefunden (JuiceShop ist by-design verwundbar)."
+        exit 1
+      fi
+  allow_failure:
+    exit_codes:
+      - 1
+  artifacts:
+    when: always
+    paths:
+      - reports/sca-container/trivy-report.json
+    expire_in: 1 week

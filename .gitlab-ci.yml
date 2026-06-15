@@ -288,7 +288,7 @@ sca-container:
   variables:
     GIT_STRATEGY: fetch
   script:
-    - mkdir -p reports/sca-container
+    - mkdir -p reports
     - trivy image
         --format json
         --output reports/trivy-report.json
@@ -298,7 +298,7 @@ sca-container:
         --password $CI_REGISTRY_PASSWORD
         $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     - |
-      CRITICAL_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' reports/sca-container/trivy-report.json)
+      CRITICAL_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' reports/trivy-report.json)
       echo "Gefundene CRITICAL Findings: $CRITICAL_COUNT"
       if [ "$CRITICAL_COUNT" -gt 0 ]; then
         echo "WARNUNG: $CRITICAL_COUNT kritische Schwachstellen gefunden (JuiceShop ist by-design verwundbar)."
@@ -310,5 +310,5 @@ sca-container:
   artifacts:
     when: always
     paths:
-      - reports/sca-container/trivy-report.json
+      - reports/trivy-report.json
     expire_in: 1 week

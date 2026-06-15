@@ -286,12 +286,12 @@ sca-container:
   needs:
     - publish-container
   variables:
-    GIT_STRATEGY: none
+    GIT_STRATEGY: fetch
   script:
     - mkdir -p reports/sca-container
     - trivy image
         --format json
-        --output reports/sca-container/trivy-report.json
+        --output reports/trivy-report.json
         --severity LOW,MEDIUM,HIGH,CRITICAL
         --ignorefile .trivyignore
         --username $CI_REGISTRY_USER

@@ -361,6 +361,7 @@ send-to-dashboard:
       artifacts: true
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == "send-to-dashboard"' 
   before_script:
     - apk add --no-cache curl jq
   script:

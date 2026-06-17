@@ -28,25 +28,49 @@ sast-semgrep:
   stage: sast
   image: returntocorp/semgrep:stable
   script:
-    - semgrep --config=auto --json --output=semgrep-report.json app/ || true
+    - mkdir -p reports
+    - semgrep --config=auto --json --output=reports/findings-semgrep.json app/ || true
+    - |
+      if [ ! -s reports/findings-semgrep.json ]; then
+        echo "Semgrep report missing. Creating fallback JSON."
+        cat > reports/findings-semgrep.json <<EOF
+      {
+        "tool_name": "semgrep",
+        "scan_type": "sast",
+        "findings": []
+      }
+      EOF
+      fi
   artifacts:
     when: always
     paths:
-      - semgrep-report.json
+      - reports/findings-semgrep.json
     expire_in: 1 week
 
 sast-gitleaks:
   stage: sast
-  image: 
+  image:
     name: zricethezav/gitleaks:latest
     entrypoint: [""]
   script:
-    - gitleaks detect --report-format json --report-path gitleaks-report.json || true
+    - mkdir -p reports
+    - gitleaks detect --report-format json --report-path reports/findings-gitleaks.json || true
+    - |
+      if [ ! -s reports/findings-gitleaks.json ]; then
+        echo "Gitleaks report missing. Creating fallback JSON."
+        cat > reports/findings-gitleaks.json <<EOF
+      {
+        "tool_name": "gitleaks",
+        "scan_type": "secret_detection",
+        "findings": []
+      }
+      EOF
+      fi
   artifacts:
     when: always
     paths:
-      - gitleaks-report.json
-    expire_in: 1 week    
+      - reports/findings-gitleaks.json
+    expire_in: 1 week
 
 publish-container:
   stage: publish

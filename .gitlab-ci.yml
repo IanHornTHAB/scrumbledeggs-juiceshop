@@ -29,18 +29,26 @@ sast-semgrep:
   image: returntocorp/semgrep:stable
   script:
     - mkdir -p reports
-    - semgrep --config=auto --json --output=reports/findings-semgrep.json app/ || true
+
+    # Absichtlich falsche Config zum Testen
+    - semgrep --config=gibt-es-nicht --json --output=reports/findings-semgrep.json app/ || true
+
     - |
       if [ ! -s reports/findings-semgrep.json ]; then
         echo "Semgrep report missing. Creating fallback JSON."
+
         cat > reports/findings-semgrep.json <<EOF
-      {
-        "tool_name": "semgrep",
-        "scan_type": "sast",
-        "findings": []
-      }
-      EOF
+{
+  "tool_name": "semgrep",
+  "scan_type": "sast",
+  "findings": []
+}
+EOF
+
       fi
+
+    - cat reports/findings-semgrep.json
+
   artifacts:
     when: always
     paths:

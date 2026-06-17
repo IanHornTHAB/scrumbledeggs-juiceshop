@@ -122,10 +122,35 @@ integration-test:
 npm-audit:
   stage: sca-package
   image: node:24
+
   script:
+    - mkdir -p reports
     - cd app
     - npm install
-    - npm audit || true
+
+    # npm audit als JSON ausgeben
+    - npm audit --json > ../reports/findings-npm-audit.json || true
+
+    # Fallback falls keine Datei existiert oder leer ist
+    - |
+      if [ ! -s ../reports/findings-npm-audit.json ]; then
+        echo "npm audit report missing. Creating fallback JSON."
+
+        printf '%s\n' \
+          '{' \
+          '  "tool_name": "npm-audit",' \
+          '  "scan_type": "sca-package",' \
+          '  "findings": []' \
+          '}' > ../reports/findings-npm-audit.json
+      fi
+
+    - cat ../reports/findings-npm-audit.json
+
+  artifacts:
+    when: always
+    paths:
+      - reports/findings-npm-audit.json
+    expire_in: 1 week
 
 deploy:
   stage: deploy

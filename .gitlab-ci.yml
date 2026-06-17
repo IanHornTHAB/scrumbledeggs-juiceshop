@@ -314,3 +314,39 @@ sca-container:
     paths:
       - reports/trivy-report.json
     expire_in: 1 week
+
+send-to-dashboard:
+  stage: report
+  image: alpine:3.20
+  needs:
+    - job: collect_results
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - |
+      jq -n \
+        --arg sha "$CI_COMMIT_SHA" \
+        --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        --slurpfile findings scan-results.json \
+        '{commit_sha: $sha, timestamp: $ts, findings: $findings[0]}' > payload.json
+    - |
+      status=$(curl -s -o response.json -w "%{http_code}" \
+        -X POST "$DASHBOARD_URL/api/scan-results" \
+        -H "Authorization: Bearer $DASHBOARD_TOKEN" \
+        -H "Content-Type: application/json" \
+        --data @payload.json)
+      echo "HTTP-Status: $status"
+      cat response.json
+      if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+        echo "Dashboard-Ingest fehlgeschlagen (Status $status)"
+        exit 1
+      fi
+  artifacts:
+    when: always
+    paths:
+      - payload.json
+      - response.json
+    expire_in: 1 week

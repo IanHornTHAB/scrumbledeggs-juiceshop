@@ -507,6 +507,7 @@ function collectResults() {
     findings.filter(f => f.status === 'success' && f.vulnerability_name !== 'No findings').length;
 
   const output = {
+    schema_version: '1.0',
     pipeline_run_id: PIPELINE_ID,
     timestamp: TIMESTAMP,
     source: 'juice-shop-pipeline',

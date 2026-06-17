@@ -506,6 +506,8 @@ function collectResults() {
   const countRealFindings = findings =>
     findings.filter(f => f.status === 'success' && f.vulnerability_name !== 'No findings').length;
 
+  const fuzzingOverallStatus = fuzzingResult.artifacts.some(a => a.status === 'success') ? 'success' : 'error';
+
   const output = {
     schema_version: '1.0',
     pipeline_run_id: PIPELINE_ID,
@@ -517,6 +519,13 @@ function collectResults() {
       secret_detection: countRealFindings(gitleaksResult.findings),
       dast: countRealFindings(zapResult.findings),
       fuzzing: countRealFindings(fuzzingResult.findings)
+    },
+    stages: {
+      sast: { status: semgrepResult.artifact.status, tool: 'Semgrep' },
+      secrets: { status: gitleaksResult.artifact.status, tool: 'Gitleaks' },
+      dast: { status: zapResult.artifact.status, tool: 'ZAP' },
+      fuzzing: { status: fuzzingOverallStatus, tool: 'ffuf' },
+      report: { status: 'success', tool: 'collect-results' }
     },
     artifacts: {
       sast: {

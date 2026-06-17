@@ -27,16 +27,9 @@ package:
 sast-semgrep:
   stage: sast
   image: returntocorp/semgrep:stable
-
   script:
     - mkdir -p reports
-
-    # Absichtlich fehlerhafte Config
-    - semgrep --config=gibt-es-nicht --json --output=reports/findings-semgrep.json app/ || true
-
-    # Report absichtlich löschen, damit die Fallback-Logik greift
-    - rm -f reports/findings-semgrep.json
-
+    - semgrep --config=auto --json --output=reports/findings-semgrep.json app/ || true
     - |
       if [ ! -s reports/findings-semgrep.json ]; then
         echo "Semgrep report missing. Creating fallback JSON."

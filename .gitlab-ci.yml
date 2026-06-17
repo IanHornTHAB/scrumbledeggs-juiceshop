@@ -357,7 +357,7 @@ send-to-dashboard:
   stage: report
   image: alpine:3.20
   needs:
-    - job: collect_results
+    - job: collect-results
       artifacts: true
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

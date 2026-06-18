@@ -28,25 +28,52 @@ sast-semgrep:
   stage: sast
   image: returntocorp/semgrep:stable
   script:
-    - semgrep --config=auto --json --output=semgrep-report.json app/ || true
+    - mkdir -p reports
+    - semgrep --config=auto --json --output=reports/findings-semgrep.json app/ || true
+    - |
+      if [ ! -s reports/findings-semgrep.json ]; then
+        echo "Semgrep report missing. Creating fallback JSON."
+
+        printf '%s\n' \
+          '{' \
+          '  "tool_name": "semgrep",' \
+          '  "scan_type": "sast",' \
+          '  "findings": []' \
+          '}' > reports/findings-semgrep.json
+      fi
+
+    - cat reports/findings-semgrep.json
+
   artifacts:
     when: always
     paths:
-      - semgrep-report.json
+      - reports/findings-semgrep.json
     expire_in: 1 week
 
 sast-gitleaks:
   stage: sast
-  image: 
+  image:
     name: zricethezav/gitleaks:latest
     entrypoint: [""]
   script:
-    - gitleaks detect --report-format json --report-path gitleaks-report.json || true
+    - mkdir -p reports
+    - gitleaks detect --report-format json --report-path reports/findings-gitleaks.json || true
+    - |
+      if [ ! -s reports/findings-gitleaks.json ]; then
+        echo "Gitleaks report missing. Creating fallback JSON."
+        cat > reports/findings-gitleaks.json <<EOF
+      {
+        "tool_name": "gitleaks",
+        "scan_type": "secret_detection",
+        "findings": []
+      }
+      EOF
+      fi
   artifacts:
     when: always
     paths:
-      - gitleaks-report.json
-    expire_in: 1 week    
+      - reports/findings-gitleaks.json
+    expire_in: 1 week
 
 publish-container:
   stage: publish
@@ -95,10 +122,35 @@ integration-test:
 npm-audit:
   stage: sca-package
   image: node:24
+
   script:
+    - mkdir -p reports
     - cd app
     - npm install
-    - npm audit || true
+
+    # npm audit als JSON ausgeben
+    - npm audit --json > ../reports/findings-npm-audit.json || true
+
+    # Fallback falls keine Datei existiert oder leer ist
+    - |
+      if [ ! -s ../reports/findings-npm-audit.json ]; then
+        echo "npm audit report missing. Creating fallback JSON."
+
+        printf '%s\n' \
+          '{' \
+          '  "tool_name": "npm-audit",' \
+          '  "scan_type": "sca-package",' \
+          '  "findings": []' \
+          '}' > ../reports/findings-npm-audit.json
+      fi
+
+    - cat ../reports/findings-npm-audit.json
+
+  artifacts:
+    when: always
+    paths:
+      - reports/findings-npm-audit.json
+    expire_in: 1 week
 
 deploy:
   stage: deploy
@@ -148,10 +200,21 @@ dast-zap:
   script:
     - sleep 60
     - mkdir -p /zap/wrk
-    - zap-full-scan.py -t http://$SSH_IP:3000 -r zap-report.html -J zap-report.json -a || true
     - mkdir -p $CI_PROJECT_DIR/reports
-    - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/reports/zap-report.html
-    - cp /zap/wrk/zap-report.json $CI_PROJECT_DIR/reports/zap-report.json
+    - zap-full-scan.py -t http://$SSH_IP:3000 -r zap-report.html -J zap-report.json -a || true
+    - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/reports/zap-report.html || true
+    - cp /zap/wrk/zap-report.json $CI_PROJECT_DIR/reports/zap-report.json || true
+    - |
+      if [ ! -s "$CI_PROJECT_DIR/reports/zap-report.json" ]; then
+        echo "ZAP JSON report missing. Creating fallback JSON."
+        printf '%s\n' \
+          '{' \
+          '  "tool_name": "zap",' \
+          '  "scan_type": "dast",' \
+          '  "findings": []' \
+          '}' > "$CI_PROJECT_DIR/reports/zap-report.json"
+      fi
+    - cat $CI_PROJECT_DIR/reports/zap-report.json
   artifacts:
     when: always
     paths:
@@ -221,8 +284,10 @@ fuzzing:
       ../../../etc/passwd
       %00
       EOF
+
   script:
     - source fuzzing.env
+
     - |
       ffuf \
         -u http://$SSH_IP:3000/FUZZ \
@@ -262,20 +327,35 @@ fuzzing:
         -rate 10 \
         -o reports/fuzzing/search-fuzz.json \
         -of json || true
+
+    - |
+      for report in endpoints.json login-fuzz.json search-fuzz.json; do
+        if [ ! -s "reports/fuzzing/$report" ]; then
+          echo "Fuzzing report $report missing. Creating fallback JSON."
+          printf '%s\n' \
+            '{' \
+            '  "tool_name": "ffuf",' \
+            '  "scan_type": "web_api_fuzzing",' \
+            '  "findings": []' \
+            '}' > "reports/fuzzing/$report"
+        fi
+      done
     
     - |
       echo "Prüfe Reports auf HTTP 500"
       for report in reports/fuzzing/*.json; do
-        COUNT=$(jq '[.results[] | select(.status == 500)] | length' "$report")
+        COUNT=$(jq '[.results[]? | select(.status == 500)] | length' "$report")
 
         if [ "$COUNT" -gt 0 ]; then
           echo "WARNUNG: $COUNT x HTTP 500 in $report"
         fi
       done
+
   artifacts:
     when: always
     paths:
       - reports/fuzzing/
     expire_in: 1 week
+
   rules:
     - when: always

@@ -166,44 +166,34 @@ fuzzing:
   stage: fuzzing
   image: alpine:3.20
   before_script:
-    - apk add --no-cache curl wget jq bash    
+    - apk add --no-cache curl wget jq bash python3
     - wget -q https://github.com/ffuf/ffuf/releases/download/v2.1.0/ffuf_2.1.0_linux_amd64.tar.gz
     - tar -xzf ffuf_2.1.0_linux_amd64.tar.gz
     - mv ffuf /usr/local/bin/ffuf
     - chmod +x /usr/local/bin/ffuf
     - mkdir -p reports/fuzzing
-    
     - |
       echo "Warte auf Juice Shop..."
-
       for i in $(seq 1 30); do
         STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$SSH_IP:3000 || true)
-
         if [ "$STATUS" = "200" ]; then
           echo "Juice Shop erreichbar"
           break
         fi
-
         echo "Noch nicht erreichbar..."
         sleep 5
       done
-    
     - |
       RESPONSE=$(curl -s -X POST http://$SSH_IP:3000/rest/user/login \
         -H "Content-Type: application/json" \
         -d "{\"email\":\"$JUICESHOP_ADMIN_EMAIL\",\"password\":\"$JUICESHOP_ADMIN_PASSWORD\"}")
-  
       echo "Login Response: $RESPONSE"
-
       TOKEN=$(echo "$RESPONSE" | jq -r '.authentication.token // empty')
-
       if [ -z "$TOKEN" ]; then
         echo "FEHLER: Kein Token erhalten. Response war: $RESPONSE"
         exit 1
       fi
-
       echo "TOKEN=$TOKEN" > fuzzing.env
-    
     - |
       cat > /tmp/api-endpoints.txt << 'EOF'
       rest/user/login
@@ -213,7 +203,6 @@ fuzzing:
       api/Users
       api/Products
       EOF
-    
     - |
       cat > /tmp/payloads.txt << 'EOF'
       ' OR 1=1--
@@ -224,58 +213,42 @@ fuzzing:
   script:
     - source fuzzing.env
     - |
-      ffuf \
-        -u http://$SSH_IP:3000/FUZZ \
+      ffuf -u http://$SSH_IP:3000/FUZZ \
         -w /tmp/api-endpoints.txt \
-        -mc all \
-        -fc 404 \
-        -t 2 \
-        -timeout 15 \
-        -rate 20 \
-        -o reports/fuzzing/endpoints.json \
-        -of json || true
-    
+        -mc all -fc 404 -t 2 -timeout 15 -rate 20 \
+        -o reports/fuzzing/endpoints.json -of json || true
     - |
-      ffuf \
-        -u http://$SSH_IP:3000/rest/user/login \
-        -X POST \
-        -H "Content-Type: application/json" \
+      ffuf -u http://$SSH_IP:3000/rest/user/login \
+        -X POST -H "Content-Type: application/json" \
         -d '{"email":"FUZZ","password":"test"}' \
         -w /tmp/payloads.txt \
-        -mc all \
-        -fc 404 \
-        -t 2 \
-        -timeout 15 \
-        -rate 10 \
-        -o reports/fuzzing/login-fuzz.json \
-        -of json || true
-    
+        -mc all -fc 404 -t 2 -timeout 15 -rate 10 \
+        -o reports/fuzzing/login-fuzz.json -of json || true
     - |
-      ffuf \
-        -u "http://$SSH_IP:3000/rest/products/search?q=FUZZ" \
+      ffuf -u "http://$SSH_IP:3000/rest/products/search?q=FUZZ" \
         -H "Authorization: Bearer $TOKEN" \
         -w /tmp/payloads.txt \
-        -mc all \
-        -fc 404 \
-        -t 2 \
-        -timeout 15 \
-        -rate 10 \
-        -o reports/fuzzing/search-fuzz.json \
-        -of json || true
-    
+        -mc all -fc 404 -t 2 -timeout 15 -rate 10 \
+        -o reports/fuzzing/search-fuzz.json -of json || true
     - |
       echo "Prüfe Reports auf HTTP 500"
       for report in reports/fuzzing/*.json; do
         COUNT=$(jq '[.results[] | select(.status == 500)] | length' "$report")
-
         if [ "$COUNT" -gt 0 ]; then
           echo "WARNUNG: $COUNT x HTTP 500 in $report"
         fi
       done
+    - |
+      python3 scripts/normalize_ffuf.py \
+        --input-dir  reports/fuzzing \
+        --output     reports/findings-ffuf.json \
+        --pipeline-id $CI_PIPELINE_ID \
+        --commit-sha  $CI_COMMIT_SHA
   artifacts:
     when: always
     paths:
       - reports/fuzzing/
+      - reports/findings-ffuf.json
     expire_in: 1 week
   rules:
     - when: always

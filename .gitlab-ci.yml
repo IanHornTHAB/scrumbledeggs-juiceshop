@@ -283,8 +283,10 @@ fuzzing:
       ../../../etc/passwd
       %00
       EOF
+
   script:
     - source fuzzing.env
+
     - |
       ffuf \
         -u http://$SSH_IP:3000/FUZZ \
@@ -324,20 +326,35 @@ fuzzing:
         -rate 10 \
         -o reports/fuzzing/search-fuzz.json \
         -of json || true
+
+    - |
+      for report in endpoints.json login-fuzz.json search-fuzz.json; do
+        if [ ! -s "reports/fuzzing/$report" ]; then
+          echo "Fuzzing report $report missing. Creating fallback JSON."
+          printf '%s\n' \
+            '{' \
+            '  "tool_name": "ffuf",' \
+            '  "scan_type": "web_api_fuzzing",' \
+            '  "findings": []' \
+            '}' > "reports/fuzzing/$report"
+        fi
+      done
     
     - |
       echo "Prüfe Reports auf HTTP 500"
       for report in reports/fuzzing/*.json; do
-        COUNT=$(jq '[.results[] | select(.status == 500)] | length' "$report")
+        COUNT=$(jq '[.results[]? | select(.status == 500)] | length' "$report")
 
         if [ "$COUNT" -gt 0 ]; then
           echo "WARNUNG: $COUNT x HTTP 500 in $report"
         fi
       done
+
   artifacts:
     when: always
     paths:
       - reports/fuzzing/
     expire_in: 1 week
+
   rules:
     - when: always

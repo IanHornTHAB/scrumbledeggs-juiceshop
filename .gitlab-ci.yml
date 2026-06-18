@@ -152,11 +152,18 @@ dast-zap:
     - mkdir -p $CI_PROJECT_DIR/reports
     - cp /zap/wrk/zap-report.html $CI_PROJECT_DIR/reports/zap-report.html
     - cp /zap/wrk/zap-report.json $CI_PROJECT_DIR/reports/zap-report.json
+    - pip install --quiet --break-system-packages || true
+    - python3 scripts/normalize_zap.py
+        --input       $CI_PROJECT_DIR/reports/zap-report.json
+        --output      $CI_PROJECT_DIR/reports/findings-zap.json
+        --pipeline-id $CI_PIPELINE_ID
+        --commit-sha  $CI_COMMIT_SHA
   artifacts:
     when: always
     paths:
       - reports/zap-report.html
       - reports/zap-report.json
+      - reports/findings-zap.json
     expire_in: 1 week
   timeout: 30 minutes
   allow_failure: false

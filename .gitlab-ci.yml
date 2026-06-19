@@ -37,16 +37,23 @@ sast-semgrep:
 
 sast-gitleaks:
   stage: sast
-  image: 
-    name: zricethezav/gitleaks:latest
-    entrypoint: [""]
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache python3 curl
+    - curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz | tar -xz -C /usr/local/bin
   script:
     - gitleaks detect --report-format json --report-path gitleaks-report.json || true
+    - python3 scripts/normalize_gitleaks.py
+        --input       gitleaks-report.json
+        --output      reports/findings-gitleaks.json
+        --pipeline-id $CI_PIPELINE_ID
+        --commit-sha  $CI_COMMIT_SHA
   artifacts:
     when: always
     paths:
       - gitleaks-report.json
-    expire_in: 1 week    
+      - reports/findings-gitleaks.json
+    expire_in: 1 week
 
 publish-container:
   stage: publish

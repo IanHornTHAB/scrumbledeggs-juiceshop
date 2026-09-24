@@ -1,3 +1,26 @@
+# scrumbledeggs-juiceshop
+
+Studienprojekt der TH Aschaffenburg (Kurs `agilesec26`), entstanden zwischen April und
+Juni 2026 in einem sechsköpfigen Team.
+
+Dieser Fork von **OWASP Juice Shop** trägt eine GitLab-CI/CD-Pipeline mit zehn Stages:
+
+`package` → `sast` (Semgrep, Gitleaks) → `sca-package` → `publish` → `test` →
+`sca-container` → `deploy` → `fuzzing` → `dast-scan` (OWASP ZAP) → `report`
+
+Die Pipeline liegt in [`.gitlab-ci.yml`](.gitlab-ci.yml). Die Scanner-Ergebnisse werden
+normalisiert und an das Dashboard unter
+[scrumbledeggs-vulnerability-dashboard](https://github.com/IanHornTHAB/scrumbledeggs-vulnerability-dashboard)
+weitergereicht.
+
+> **Hinweis zur Veröffentlichung:** Interne Adressen der Hochschule (VM-Adresse,
+> GitLab-Host) wurden vor der Veröffentlichung aus dem gesamten Verlauf entfernt. Die
+> E-Mail-Adressen der Beteiligten sind durch einen Platzhalter ersetzt, die Namen in der
+> Commit-Historie sind unverändert. Der Anwendungscode selbst stammt von OWASP Juice Shop
+> (MIT-Lizenz); die Arbeit des Teams steckt in der Pipeline.
+
+---
+
 # ![Juice Shop Logo](https://raw.githubusercontent.com/juice-shop/juice-shop/master/frontend/src/assets/public/images/JuiceShop_Logo_100px.png) OWASP Juice Shop
 
 [![OWASP Flagship](https://img.shields.io/badge/owasp-flagship%20project-48A646.svg)](https://owasp.org/projects/#sec-flagships)
